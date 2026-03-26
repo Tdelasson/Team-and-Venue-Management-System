@@ -2,35 +2,15 @@ import Link from "next/link";
 
 const modules = [
   {
-    title: "Login & Roller",
-    description: "Role-based adgang for admin, trænere, spillere og spectators.",
-    href: "/login",
+    title: "Hold",
+    description: "Oversigt over hold.",
+    href: "/hold",
   },
   {
-    title: "Bane-events",
-    description: "Oversigt over træninger og kampe med hurtig statusvisning.",
-    href: "/events",
-  },
-  {
-    title: "Booking-flow",
+    title: "Bane-booking",
     description: "Trænere opretter forespørgsler, admin godkender/afviser.",
     href: "/bookings",
-  },
-  {
-    title: "Fast træningsdage",
-    description: "Opsæt faste slots 1-2 gange ugentligt for nye hold.",
-    href: "/training-schedule",
-  },
-  {
-    title: "Scoreboard",
-    description: "Simpel placeringstavle på tværs af institutter og hold.",
-    href: "/scoreboard",
-  },
-  {
-    title: "Godkendelser",
-    description: "Admin-hub til behandling af banereservationer.",
-    href: "/requests",
-  },
+  }
 ];
 
 export default function Home() {

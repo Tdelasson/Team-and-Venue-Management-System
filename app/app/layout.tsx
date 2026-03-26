@@ -8,13 +8,8 @@ export const metadata: Metadata = {
 };
 
 const navItems = [
-  { href: "/login", label: "Login" },
-  { href: "/dashboard", label: "Oversigt" },
-  { href: "/events", label: "Events" },
-  { href: "/bookings", label: "Bookinger" },
-  { href: "/requests", label: "Godkendelser" },
-  { href: "/scoreboard", label: "Scoreboard" },
-  { href: "/training-schedule", label: "Fast træning" },
+  { href: "/bookings", label: "Bane-booking" },
+  { href: "/hold", label: "Hold" }
 ];
 
 export default function RootLayout({
