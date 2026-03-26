@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -12,11 +13,15 @@ const navItems = [
   { href: "/hold", label: "Hold" }
 ];
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const username = cookieStore.get("username")?.value;
+  const userRole = cookieStore.get("userRole")?.value;
+
   return (
     <html lang="da" className="h-full">
       <body className="min-h-full bg-base-200 text-base-content">
@@ -36,9 +41,16 @@ export default function RootLayout({
             </ul>
           </div>
           <div className="navbar-end">
-            <Link href="/login" className="btn btn-primary btn-sm">
-              Log ind
-            </Link>
+            {username ? (
+              <p className="text-sm font-medium">
+                Logged in as: {username}
+                {userRole ? ` (${userRole})` : ""}
+              </p>
+            ) : (
+              <Link href="/login" className="btn btn-primary btn-sm">
+                Log ind
+              </Link>
+            )}
           </div>
         </div>
         <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 p-6">

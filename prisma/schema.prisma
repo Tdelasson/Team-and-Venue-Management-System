@@ -1,0 +1,19 @@
+// 1. Skift til SQLite
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 2. Bruger-model
+model User {
+  id       Int    @id @default(autoincrement())
+  username String @unique
+  password String // Husk at hashe denne!
+  role     String @default("spiller") // admin, træner, spiller, spectator
+  
+  createdAt DateTime @default(now())
+}
