@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useAuth } from "./AuthProvider";
+import { handleLogout } from "../../actions/auth";
 
 const roleBadge: Record<string, string> = {
   ADMIN: "badge-error",
@@ -54,11 +55,16 @@ export function NavBar() {
       </div>
       <div className="navbar-end">
         {user ? (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <span className={`badge ${roleBadge[user.role]}`}>
               {roleLabel[user.role]}
             </span>
             <span className="text-sm">{user.name}</span>
+            <form action={handleLogout}>
+              <button type="submit" className="btn btn-ghost btn-sm">
+                Log ud
+              </button>
+            </form>
           </div>
         ) : (
           <Link href="/login" className="btn btn-primary btn-sm">

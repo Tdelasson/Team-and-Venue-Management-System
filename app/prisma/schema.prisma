@@ -19,6 +19,7 @@ model User {
   id       String  @id @default(cuid())
   name     String
   email    String  @unique
+  password String
   role     String  // ADMIN, COACH, PLAYER, SPECTATOR
   teamId   String?
   team     Team?   @relation(fields: [teamId], references: [id])

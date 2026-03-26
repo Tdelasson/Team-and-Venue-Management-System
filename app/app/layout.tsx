@@ -4,7 +4,6 @@ import { cookies } from "next/headers";
 import "./globals.css";
 import { AuthProvider } from "./components/AuthProvider";
 import { NavBar } from "./components/NavBar";
-import { RoleSwitcher } from "./components/RoleSwitcher";
 
 export const metadata: Metadata = {
   title: "Banebookingssystem Prototype",
@@ -28,7 +27,6 @@ export default async function RootLayout({
           <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 p-6">
             {children}
           </main>
-          <RoleSwitcher />
         </AuthProvider>
       </body>
     </html>

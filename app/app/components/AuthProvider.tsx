@@ -5,14 +5,12 @@ import type { AuthUser } from "@/lib/types";
 
 interface AuthContextType {
   user: AuthUser | null;
-  users: AuthUser[];
   setUser: (user: AuthUser | null) => void;
   loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
-  users: [],
   setUser: () => {},
   loading: true,
 });
@@ -22,35 +20,21 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUserState] = useState<AuthUser | null>(null);
-  const [users, setUsers] = useState<AuthUser[]>([]);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/auth/me")
       .then((res) => res.json())
       .then((data) => {
-        setUsers(data.users);
-        const savedId = localStorage.getItem("mockUserId");
-        if (savedId) {
-          const saved = data.users.find((u: AuthUser) => u.id === savedId);
-          if (saved) setUserState(saved);
-        }
+        setUser(data.user ?? null);
         setLoading(false);
-      });
+      })
+      .catch(() => setLoading(false));
   }, []);
 
-  const setUser = (u: AuthUser | null) => {
-    setUserState(u);
-    if (u) {
-      localStorage.setItem("mockUserId", u.id);
-    } else {
-      localStorage.removeItem("mockUserId");
-    }
-  };
-
   return (
-    <AuthContext.Provider value={{ user, users, setUser, loading }}>
+    <AuthContext.Provider value={{ user, setUser, loading }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma } from "../../lib/prisma";
+import { prisma } from "../lib/prisma";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -14,15 +14,14 @@ export async function handleAuth(formData: FormData) {
 
   if (isLogin) {
     // LOGIN LOGIK
-    const user = await prisma.user.findUnique({ where: { username } });
+    const user = await prisma.user.findUnique({ where: { email: username } });
     if (!user || !(await bcrypt.compare(password, user.password))) {
       throw new Error("Forkert brugernavn eller adgangskode");
     }
-    
+
     const cookieStore = await cookies();
 
-    // Gør login vedvarende i 30 dage i stedet for kun browser-sessionen.
-    cookieStore.set("userId", user.id.toString(), {
+    cookieStore.set("userId", user.id, {
       httpOnly: true,
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
@@ -36,7 +35,7 @@ export async function handleAuth(formData: FormData) {
       maxAge: THIRTY_DAYS_IN_SECONDS,
       path: "/",
     });
-    cookieStore.set("username", user.username, {
+    cookieStore.set("username", user.name, {
       httpOnly: true,
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
@@ -46,11 +45,48 @@ export async function handleAuth(formData: FormData) {
   } else {
     // OPRET BRUGER LOGIK
     const hashedPassword = await bcrypt.hash(password, 10);
-    await prisma.user.create({
-      data: { username, password: hashedPassword, role },
+    const newUser = await prisma.user.create({
+      data: {
+        name: username,
+        email: username,
+        password: hashedPassword,
+        role,
+      },
     });
-    // Log ind automatisk efter oprettelse kan tilføjes her
+
+    // Auto-login efter oprettelse
+    const cookieStore = await cookies();
+
+    cookieStore.set("userId", newUser.id, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: THIRTY_DAYS_IN_SECONDS,
+      path: "/",
+    });
+    cookieStore.set("userRole", newUser.role, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: THIRTY_DAYS_IN_SECONDS,
+      path: "/",
+    });
+    cookieStore.set("username", newUser.name, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: THIRTY_DAYS_IN_SECONDS,
+      path: "/",
+    });
   }
 
-  redirect("/dashboard"); // Send brugeren videre efter succes
+  redirect("/");
+}
+
+export async function handleLogout() {
+  const cookieStore = await cookies();
+  cookieStore.delete("userId");
+  cookieStore.delete("userRole");
+  cookieStore.delete("username");
+  redirect("/login");
 }

@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getMockUser } from "@/lib/get-mock-user";
+import { getAuthUser } from "@/lib/get-mock-user";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const user = await getMockUser(request);
+  const user = await getAuthUser();
   if (!user || user.role !== "SPECTATOR") {
     return NextResponse.json({ error: "Kun tilskuere kan markere interesse" }, { status: 403 });
   }

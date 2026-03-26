@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getMockUser } from "@/lib/get-mock-user";
+import { getAuthUser } from "@/lib/get-mock-user";
 import { checkPitchConflict } from "@/lib/booking-conflicts";
 import type { PitchOption } from "@/lib/types";
 
@@ -35,7 +35,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const user = await getMockUser(request);
+  const user = await getAuthUser();
   if (!user) {
     return NextResponse.json({ error: "Ikke autoriseret" }, { status: 401 });
   }
@@ -94,7 +94,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const user = await getMockUser(request);
+  const user = await getAuthUser();
   if (!user) {
     return NextResponse.json({ error: "Ikke autoriseret" }, { status: 401 });
   }

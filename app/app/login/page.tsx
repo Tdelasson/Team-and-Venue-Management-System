@@ -2,7 +2,12 @@
 import { useState } from "react";
 import { handleAuth } from "../../actions/auth";
 
-const roles = ["admin", "træner", "spiller", "spectator"];
+const roles = [
+  { value: "ADMIN", label: "Admin" },
+  { value: "COACH", label: "Træner" },
+  { value: "PLAYER", label: "Spiller" },
+  { value: "SPECTATOR", label: "Tilskuer" },
+];
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -30,7 +35,7 @@ export default function LoginPage() {
             <label className="label">Vælg din rolle</label>
             <select name="role" className="select select-bordered w-full">
               {roles.map((r) => (
-                <option key={r} value={r}>{r}</option>
+                <option key={r.value} value={r.value}>{r.label}</option>
               ))}
             </select>
           </div>

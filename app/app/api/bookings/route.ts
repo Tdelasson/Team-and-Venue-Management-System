@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getMockUser } from "@/lib/get-mock-user";
+import { getAuthUser } from "@/lib/get-mock-user";
 import { checkPitchConflict } from "@/lib/booking-conflicts";
 import type { PitchOption } from "@/lib/types";
 
@@ -46,9 +46,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const user = await getMockUser(request);
+  const user = await getAuthUser();
   if (!user || user.role !== "COACH") {
     return NextResponse.json({ error: "Kun trænere kan oprette bookinger" }, { status: 403 });
+  }
+  if (!user.teamId) {
+    return NextResponse.json({ error: "Du skal være tilknyttet et hold for at oprette bookinger" }, { status: 400 });
   }
 
   const body = await request.json();
