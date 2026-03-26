@@ -17,3 +17,13 @@ model User {
   
   createdAt DateTime @default(now())
 }
+
+model Team {
+  id              Int      @id @default(autoincrement())
+  name            String
+  institute       String
+  numberOfPlayers Int
+  numberOfFans    Int
+  createdAt       DateTime @default(now())
+}
+

@@ -1,0 +1,9 @@
+-- CreateTable
+CREATE TABLE "Team" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "name" TEXT NOT NULL,
+    "institute" TEXT NOT NULL,
+    "numberOfPlayers" INTEGER NOT NULL,
+    "numberOfFans" INTEGER NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
