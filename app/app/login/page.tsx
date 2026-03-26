@@ -1,76 +1,52 @@
 "use client";
+import { useState } from "react";
+import { handleAuth } from "../../actions/auth";
 
-import { useRouter } from "next/navigation";
-import { useAuth } from "../components/AuthProvider";
-
-const roleBadge: Record<string, string> = {
-  ADMIN: "badge-error",
-  COACH: "badge-warning",
-  PLAYER: "badge-info",
-  SPECTATOR: "badge-success",
-};
-
-const roleLabel: Record<string, string> = {
-  ADMIN: "Admin",
-  COACH: "Træner",
-  PLAYER: "Spiller",
-  SPECTATOR: "Tilskuer",
-};
-
-const roleDescription: Record<string, string> = {
-  ADMIN: "Godkend bookinger og administrer systemet",
-  COACH: "Opret og administrer bookinger for dit hold",
-  PLAYER: "Se kalender og tilmeld dig træninger",
-  SPECTATOR: "Se kampkalender og vis interesse",
-};
+const roles = ["admin", "træner", "spiller", "spectator"];
 
 export default function LoginPage() {
-  const { users, setUser } = useAuth();
-  const router = useRouter();
-
-  const grouped = users.reduce((acc, u) => {
-    if (!acc[u.role]) acc[u.role] = [];
-    acc[u.role].push(u);
-    return acc;
-  }, {} as Record<string, typeof users>);
-
-  const handleSelect = (user: (typeof users)[0]) => {
-    setUser(user);
-    router.push("/");
-  };
+  const [isLogin, setIsLogin] = useState(true);
 
   return (
-    <section>
-      <h1 className="text-2xl font-semibold mb-2">Log ind</h1>
-      <p className="text-base-content/70 mb-6">Vælg en bruger for at logge ind (mock-system).</p>
+    <section className="mx-auto mt-10 max-w-md rounded-box border border-base-300 bg-base-100 p-6 shadow-xl">
+      <h1 className="text-2xl font-bold">{isLogin ? "Log ind" : "Opret bruger"}</h1>
 
-      <div className="space-y-6">
-        {(["ADMIN", "COACH", "PLAYER", "SPECTATOR"] as const).map((role) => (
-          <div key={role}>
-            <div className="flex items-center gap-2 mb-2">
-              <span className={`badge ${roleBadge[role]}`}>{roleLabel[role]}</span>
-              <span className="text-sm opacity-60">{roleDescription[role]}</span>
-            </div>
-            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-              {grouped[role]?.map((u) => (
-                <button
-                  key={u.id}
-                  className="card bg-base-100 border border-base-300 shadow-sm hover:shadow-md hover:border-primary transition-all cursor-pointer text-left"
-                  onClick={() => handleSelect(u)}
-                >
-                  <div className="card-body p-4">
-                    <h3 className="font-semibold">{u.name}</h3>
-                    <p className="text-sm opacity-60">{u.email}</p>
-                    {u.teamName && (
-                      <span className="badge badge-sm badge-outline mt-1">{u.teamName}</span>
-                    )}
-                  </div>
-                </button>
+      <form action={handleAuth} className="mt-4 flex flex-col gap-4">
+        {/* Skjult felt til at fortælle serveren om vi logger ind eller opretter */}
+        <input type="hidden" name="isLogin" value={String(isLogin)} />
+
+        <div className="form-control">
+          <label className="label">Brugernavn</label>
+          <input name="username" type="text" className="input input-bordered" required />
+        </div>
+
+        <div className="form-control">
+          <label className="label">Adgangskode</label>
+          <input name="password" type="password" className="input input-bordered" required />
+        </div>
+
+        {!isLogin && (
+          <div className="form-control">
+            <label className="label">Vælg din rolle</label>
+            <select name="role" className="select select-bordered w-full">
+              {roles.map((r) => (
+                <option key={r} value={r}>{r}</option>
               ))}
-            </div>
+            </select>
           </div>
-        ))}
-      </div>
+        )}
+
+        <button type="submit" className="btn btn-primary mt-4">
+          {isLogin ? "Log ind" : "Registrer"}
+        </button>
+      </form>
+
+      <button
+        onClick={() => setIsLogin(!isLogin)}
+        className="link link-hover mt-4 block text-center text-sm"
+      >
+        {isLogin ? "Mangler du en konto? Opret her" : "Har du allerede en konto? Log ind"}
+      </button>
     </section>
   );
 }

@@ -1,54 +1,77 @@
-"use client";
+import { prisma } from "../../../lib/prisma";
+import { createTeam } from "../../actions/team";
 
-import { useState, useEffect } from "react";
-import { apiFetch } from "@/lib/api";
+export default async function ScoreboardPage() {
+  type TeamRow = {
+    id: number;
+    name: string;
+    institute: string;
+    numberOfPlayers: number;
+    numberOfFans: number;
+  };
 
-interface Team {
-  id: string;
-  name: string;
-  clubColor: string;
-  _count: { users: number; bookings: number };
-}
-
-export default function TeamsPage() {
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    apiFetch("/api/teams")
-      .then((r) => r.json())
-      .then((data) => {
-        setTeams(data);
-        setLoading(false);
-      });
-  }, []);
-
-  if (loading) {
-    return <div className="flex justify-center p-12"><span className="loading loading-spinner loading-lg"></span></div>;
-  }
+  const teams = await prisma.$queryRaw<TeamRow[]>`
+    SELECT id, name, institute, numberOfPlayers, numberOfFans
+    FROM Team
+    ORDER BY name ASC
+  `;
 
   return (
-    <section>
-      <h1 className="text-2xl font-semibold mb-4">Hold</h1>
-      <div className="grid gap-4 md:grid-cols-2">
-        {teams.map((team) => (
-          <div key={team.id} className="card bg-base-100 border border-base-300 shadow-sm">
-            <div className="card-body">
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-8 h-8 rounded-full"
-                  style={{ backgroundColor: team.clubColor }}
-                />
-                <h2 className="card-title">{team.name}</h2>
-              </div>
-              <div className="flex gap-4 mt-2 text-sm opacity-70">
-                <span>👥 {team._count.users} medlemmer</span>
-                <span>📅 {team._count.bookings} bookinger</span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+    <section className="space-y-4 rounded-box border border-base-300 bg-base-100 p-6">
+      <h1 className="text-2xl font-semibold">Hold</h1>
+
+      <form action={createTeam} className="grid gap-3 rounded-box border border-base-300 p-4 md:grid-cols-2">
+        <label className="form-control">
+          <span className="label-text mb-1">Navn</span>
+          <input name="name" type="text" className="input input-bordered" required />
+        </label>
+
+        <label className="form-control">
+          <span className="label-text mb-1">Institut</span>
+          <input name="institute" type="text" className="input input-bordered" required />
+        </label>
+
+        <label className="form-control">
+          <span className="label-text mb-1">Antal spillere</span>
+          <input name="numberOfPlayers" type="number" min={0} step={1} className="input input-bordered" required />
+        </label>
+
+        <label className="form-control">
+          <span className="label-text mb-1">Antal fans</span>
+          <input name="numberOfFans" type="number" min={0} step={1} className="input input-bordered" required />
+        </label>
+
+        <div className="md:col-span-2">
+          <button type="submit" className="btn btn-primary btn-sm">Opret hold</button>
+        </div>
+      </form>
+
+      {teams.length === 0 ? (
+        <p className="text-base-content/80">Ingen hold fundet endnu.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="table table-zebra">
+            <thead>
+              <tr>
+                <th>Navn</th>
+                <th>Institut</th>
+                <th>Antal spillere</th>
+                <th>Antal fans</th>
+              </tr>
+            </thead>
+            <tbody>
+              {teams.map((team) => (
+                <tr key={team.id}>
+                  <td>{team.name}</td>
+                  <td>{team.institute}</td>
+                  <td>{team.numberOfPlayers}</td>
+                  <td>{team.numberOfFans}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </section>
   );
 }
