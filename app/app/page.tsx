@@ -1,49 +1,126 @@
-import Link from "next/link";
+"use client";
 
-const modules = [
-  {
-    title: "Hold",
-    description: "Oversigt over hold.",
-    href: "/hold",
-  },
-  {
-    title: "Bane-booking",
-    description: "Trænere opretter forespørgsler, admin godkender/afviser.",
-    href: "/bookings",
-  }
-];
+import Link from "next/link";
+import { useAuth } from "./components/AuthProvider";
+import { useState, useEffect } from "react";
+import { apiFetch } from "@/lib/api";
+import { BookingCard } from "./components/BookingCard";
+import type { BookingWithRelations } from "@/lib/types";
 
 export default function Home() {
+  const { user } = useAuth();
+  const [upcoming, setUpcoming] = useState<BookingWithRelations[]>([]);
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    apiFetch("/api/bookings?status=APPROVED")
+      .then((r) => r.json())
+      .then((data) => {
+        const now = new Date();
+        const future = data
+          .filter((b: BookingWithRelations) => new Date(b.startTime) > now)
+          .slice(0, 3);
+        setUpcoming(future);
+      });
+
+    if (user?.role === "ADMIN") {
+      apiFetch("/api/bookings?status=PENDING")
+        .then((r) => r.json())
+        .then((data) => setPendingCount(data.length));
+    }
+  }, [user]);
+
   return (
     <section className="space-y-6">
       <div className="rounded-box border border-base-300 bg-base-100 p-6">
-        <h1 className="text-3xl font-bold">Banebookingssystem – prototype struktur</h1>
+        <h1 className="text-3xl font-bold">Campus Fodbold Banebooking</h1>
         <p className="mt-2 text-base-content/80">
-          Projektet er sat op til hurtig hackathon-udvikling med Next.js, Tailwind og DaisyUI.
+          Book banen til træning og kampe, se kalenderen og tilmeld dig.
         </p>
-        <div className="mt-4 flex flex-wrap gap-3">
-          <span className="badge badge-primary">Next.js App Router</span>
-          <span className="badge badge-secondary">Tailwind CSS</span>
-          <span className="badge badge-accent">DaisyUI</span>
-          <span className="badge badge-outline">Role-based klar</span>
-        </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {modules.map((module) => (
-          <article key={module.title} className="card border border-base-300 bg-base-100 shadow-sm">
+      {/* Role-specific CTAs */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {user?.role === "ADMIN" && pendingCount > 0 && (
+          <Link href="/bookings/pending" className="card bg-warning/10 border border-warning shadow-sm hover:shadow-md transition-shadow">
             <div className="card-body">
-              <h2 className="card-title">{module.title}</h2>
-              <p>{module.description}</p>
+              <h2 className="card-title text-warning">{pendingCount} ventende bookinger</h2>
+              <p>Der venter bookinger på godkendelse.</p>
               <div className="card-actions justify-end">
-                <Link href={module.href} className="btn btn-sm btn-outline">
-                  Åbn modul
-                </Link>
+                <span className="btn btn-warning btn-sm">Se ventende →</span>
               </div>
             </div>
-          </article>
-        ))}
+          </Link>
+        )}
+
+        <Link href="/bookings" className="card bg-base-100 border border-base-300 shadow-sm hover:shadow-md transition-shadow">
+          <div className="card-body">
+            <h2 className="card-title">Banekalender</h2>
+            <p>Se ugentlig oversigt over alle bookinger.</p>
+            <div className="card-actions justify-end">
+              <span className="btn btn-primary btn-sm btn-outline">Åbn kalender →</span>
+            </div>
+          </div>
+        </Link>
+
+        {user?.role === "COACH" && (
+          <Link href="/bookings/new" className="card bg-base-100 border border-base-300 shadow-sm hover:shadow-md transition-shadow">
+            <div className="card-body">
+              <h2 className="card-title">Opret booking</h2>
+              <p>Book banen til træning eller kamp.</p>
+              <div className="card-actions justify-end">
+                <span className="btn btn-primary btn-sm">Opret →</span>
+              </div>
+            </div>
+          </Link>
+        )}
+
+        {user?.role === "PLAYER" && (
+          <Link href="/bookings/my" className="card bg-base-100 border border-base-300 shadow-sm hover:shadow-md transition-shadow">
+            <div className="card-body">
+              <h2 className="card-title">Min kalender</h2>
+              <p>Se dit holds begivenheder og tilmeld dig.</p>
+              <div className="card-actions justify-end">
+                <span className="btn btn-info btn-sm btn-outline">Se kalender →</span>
+              </div>
+            </div>
+          </Link>
+        )}
+
+        <Link href="/hold" className="card bg-base-100 border border-base-300 shadow-sm hover:shadow-md transition-shadow">
+          <div className="card-body">
+            <h2 className="card-title">Hold</h2>
+            <p>Oversigt over tilmeldte hold.</p>
+            <div className="card-actions justify-end">
+              <span className="btn btn-sm btn-outline">Se hold →</span>
+            </div>
+          </div>
+        </Link>
+
+        {!user && (
+          <Link href="/login" className="card bg-primary/10 border border-primary shadow-sm hover:shadow-md transition-shadow">
+            <div className="card-body">
+              <h2 className="card-title text-primary">Log ind</h2>
+              <p>Log ind for at booke banen og tilmelde dig.</p>
+              <div className="card-actions justify-end">
+                <span className="btn btn-primary btn-sm">Log ind →</span>
+              </div>
+            </div>
+          </Link>
+        )}
       </div>
+
+      {/* Upcoming events */}
+      {upcoming.length > 0 && (
+        <div>
+          <h2 className="text-xl font-semibold mb-3">Kommende begivenheder</h2>
+          <div className="space-y-3">
+            {upcoming.map((b) => (
+              <BookingCard key={b.id} booking={b} compact />
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   );
 }

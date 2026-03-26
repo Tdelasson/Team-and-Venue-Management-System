@@ -1,10 +1,30 @@
+"use client";
+
+import Link from "next/link";
+import { useAuth } from "../components/AuthProvider";
+import { BookingCalendar } from "../components/BookingCalendar";
+
 export default function BookingsPage() {
+  const { user } = useAuth();
+
   return (
-    <section className="rounded-box border border-base-300 bg-base-100 p-6">
-      <h1 className="text-2xl font-semibold">Bane-booking</h1>
-      <p className="mt-2 text-base-content/80">
-        Placeholder til booking-flow hvor trænere opretter kamp/træningsbookinger.
-      </p>
+    <section>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-semibold">Banekalender</h1>
+        {user?.role === "COACH" && (
+          <Link href="/bookings/new" className="btn btn-primary btn-sm">
+            + Opret booking
+          </Link>
+        )}
+      </div>
+
+      {!user && (
+        <div className="alert alert-info mb-4">
+          <span>Log ind for at interagere med bookinger.</span>
+        </div>
+      )}
+
+      <BookingCalendar />
     </section>
   );
 }

@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Team {
+  id        String    @id @default(cuid())
+  name      String
+  clubColor String
+  users     User[]
+  bookings  Booking[]
+}
+
+model User {
+  id       String  @id @default(cuid())
+  name     String
+  email    String  @unique
+  role     String  // ADMIN, COACH, PLAYER, SPECTATOR
+  teamId   String?
+  team     Team?   @relation(fields: [teamId], references: [id])
+
+  createdBookings    Booking[]          @relation("BookingCreator")
+  participations     Participation[]
+  spectatorInterests SpectatorInterest[]
+}
+
+model Booking {
+  id               String   @id @default(cuid())
+  type             String   // TRAINING, MATCH
+  status           String   @default("PENDING") // PENDING, APPROVED, REJECTED, CANCELLED, CONDUCTED
+  title            String
+  teamId           String
+  team             Team     @relation(fields: [teamId], references: [id])
+  createdByUserId  String
+  createdBy        User     @relation("BookingCreator", fields: [createdByUserId], references: [id])
+  pitchOption      String   // FULL, HALF_A, HALF_B
+  startTime        DateTime
+  endTime          DateTime
+  recurringGroupId String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  participations     Participation[]
+  spectatorInterests SpectatorInterest[]
+}
+
+model Participation {
+  id        String  @id @default(cuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  status    String  // ATTENDING, NOT_ATTENDING
+
+  @@unique([userId, bookingId])
+}
+
+model SpectatorInterest {
+  id        String  @id @default(cuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bookingId])
+}
